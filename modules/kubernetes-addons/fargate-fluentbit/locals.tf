@@ -19,8 +19,8 @@ locals {
   Match *
   Key_Name log
   Parser regex
-  Preserve_Key On
-  Reserve_Data On
+  Preserve_Key True
+  Reserve_Data True
     EOF
     parsers_conf = <<EOF
 [PARSER]
