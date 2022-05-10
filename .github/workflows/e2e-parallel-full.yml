@@ -66,6 +66,8 @@ jobs:
             tenant_name: 'self'
           - example_path: examples/node-groups/windows-node-groups
             tenant_name: 'windows'
+          - example_path: examples/complete-kubernetes-addons
+            tenant_name: 'complete'
     steps:
       - name: Checkout
         uses: actions/checkout@v2
