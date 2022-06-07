@@ -12,7 +12,8 @@ The [Cluster Autoscaler](https://github.com/kubernetes/autoscaler/tree/master/cl
 [Cluster Autoscaler](https://github.com/aws-ia/terraform-aws-eks-blueprints/tree/main/modules/kubernetes-addons/cluster-autoscaler) can be deployed by enabling the add-on via the following.
 
 ```hcl
-enable_cluster_autoscaler = true
+enable_cluster_autoscaler      = true
+create_cluster_autoscaler_irsa = true
 ```
 
 ### GitOps Configuration

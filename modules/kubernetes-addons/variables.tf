@@ -44,6 +44,12 @@ variable "eks_oidc_provider" {
   description = "The OpenID Connect identity provider (issuer URL without leading `https://`)"
 }
 
+variable "eks_oidc_provider_arn" {
+  description = "The ARN of the cluster OIDC Provider. Required when creating IRSA roles within the module"
+  type        = string
+  default     = ""
+}
+
 variable "eks_cluster_endpoint" {
   type        = string
   description = "Endpoint for your Kubernetes API server"
@@ -123,15 +129,27 @@ variable "enable_amazon_eks_aws_ebs_csi_driver" {
 
 #-----------CLUSTER AUTOSCALER-------------
 variable "enable_cluster_autoscaler" {
+  description = "Enable Cluster autoscaler add-on"
   type        = bool
   default     = false
-  description = "Enable Cluster autoscaler add-on"
 }
 
-variable "cluster_autoscaler_helm_config" {
+variable "cluster_autoscaler_helm_release" {
+  description = "Cluster autoscaler Helm release configuration"
   type        = any
   default     = {}
-  description = "Cluster Autoscaler Helm Chart config"
+}
+
+variable "create_cluster_autoscaler_irsa" {
+  description = "Determines whether to create cluster-autoscaler IRSA role"
+  type        = bool
+  default     = false
+}
+
+variable "cluster_autoscaler_irsa" {
+  description = "Cluster autoscaler IAM role for service account configuration"
+  type        = any
+  default     = {}
 }
 
 #-----------Crossplane ADDON-------------

@@ -38,6 +38,7 @@ module "eks_blueprints_kubernetes_addons" {
   enable_aws_for_fluentbit             = true
   enable_aws_load_balancer_controller  = true
   enable_cluster_autoscaler            = true
+  create_cluster_autoscaler_irsa       = true
   enable_metrics_server                = true
 }
 ```
@@ -96,9 +97,10 @@ When managing add-ons via ArgoCD, certain AWS resources may still need to be cre
 To ensure that AWS resources needed for add-on functionality are created, you still need to indicate in Terraform configuration which add-ons will be managed via ArgoCD. To do so, simply enable the add-ons via their boolean properties.
 
 ```
-enable_metrics_server       = true # Deploys Metrics Server Addon
-enable_cluster_autoscaler   = true # Deploys Cluster Autoscaler Addon
-enable_prometheus           = true # Deploys Prometheus Addon
+enable_metrics_server          = true # Deploys Metrics Server Addon
+enable_cluster_autoscaler      = true # Deploys Cluster Autoscaler Addon
+create_cluster_autoscaler_irsa = true
+enable_prometheus              = true # Deploys Prometheus Addon
 ```
 
 This will indicate to each add-on module that it should create the necessary AWS resources and pass the relevant values to the ArgoCD Application resource via the Application's values map.

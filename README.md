@@ -61,6 +61,7 @@ module "eks_blueprints_kubernetes_addons" {
   enable_aws_for_fluentbit            = true
   enable_aws_load_balancer_controller = true
   enable_cluster_autoscaler           = true
+  create_cluster_autoscaler_irsa      = true
   enable_metrics_server               = true
   enable_prometheus                   = true
 }

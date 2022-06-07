@@ -2,6 +2,28 @@
 
 Terraform module which creates a Helm release.
 
+This module intentionally violates the "do not wrap a single resource in a module" rule. This is done to in order to allow passing a single variable object (`release`) that contains the pertinent attributes, reducing the number of exposed variables down to one. It is possible to use this module on its own externally, but this design decision was made to make the brokerage of information between sub-module and parent module through less variables but still providing the full breadth of access to the underlying resource.
+
+## Usage
+
+The minimium required attributes are shown below:
+
+```hcl
+module "example_helm_release" {
+  source = "./helm-release"
+
+  create = true
+
+  release = {
+    name        = "cluster-autoscaler"
+    chart       = "cluster-autoscaler"
+    repository  = "https://kubernetes.github.io/autoscaler"
+  }
+}
+```
+
+The full breadth of attributes can be found under the [helm_release](https://registry.terraform.io/providers/hashicorp/helm/latest/docs/resources/release) resource, where all attributes supported are nested under the top-level `release` variable as shown above.
+
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ## Requirements
 

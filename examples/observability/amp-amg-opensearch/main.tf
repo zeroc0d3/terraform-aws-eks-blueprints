@@ -77,15 +77,17 @@ module "eks_blueprints" {
 module "eks_blueprints_kubernetes_addons" {
   source = "../../../modules/kubernetes-addons"
 
-  eks_cluster_id       = module.eks_blueprints.eks_cluster_id
-  eks_cluster_endpoint = module.eks_blueprints.eks_cluster_endpoint
-  eks_oidc_provider    = module.eks_blueprints.oidc_provider
-  eks_cluster_version  = module.eks_blueprints.eks_cluster_version
+  eks_cluster_id        = module.eks_blueprints.eks_cluster_id
+  eks_cluster_endpoint  = module.eks_blueprints.eks_cluster_endpoint
+  eks_oidc_provider     = module.eks_blueprints.oidc_provider
+  eks_oidc_provider_arn = module.eks_blueprints.eks_oidc_provider_arn
+  eks_cluster_version   = module.eks_blueprints.eks_cluster_version
 
   # Add-ons
-  enable_metrics_server     = true
-  enable_cluster_autoscaler = true
-  enable_argocd             = true
+  enable_metrics_server          = true
+  enable_cluster_autoscaler      = true
+  create_cluster_autoscaler_irsa = true
+  enable_argocd                  = true
   argocd_applications = {
     workloads = {
       path               = "envs/dev"
@@ -108,11 +110,6 @@ module "eks_blueprints_kubernetes_addons" {
   amazon_prometheus_workspace_endpoint = module.eks_blueprints.amazon_prometheus_workspace_endpoint
 
   tags = local.tags
-
-  depends_on = [
-    module.eks_blueprints.managed_node_groups,
-    module.vpc
-  ]
 }
 
 #---------------------------------------------------------------

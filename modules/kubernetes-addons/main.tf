@@ -69,7 +69,7 @@ module "argocd" {
   helm_config                = var.argocd_helm_config
   applications               = var.argocd_applications
   admin_password_secret_name = var.argocd_admin_password_secret_name
-  addon_config               = { for k, v in local.argocd_addon_config : k => v if v != null }
+  addon_config               = { for k, v in local.argocd_addon_config : k => v if v != null && var.argocd_manage_add_ons }
   addon_context              = local.addon_context
 }
 
@@ -137,14 +137,6 @@ module "cert_manager" {
   domain_names                = var.cert_manager_domain_names
   install_letsencrypt_issuers = var.cert_manager_install_letsencrypt_issuers
   letsencrypt_email           = var.cert_manager_letsencrypt_email
-}
-
-module "cluster_autoscaler" {
-  count             = var.enable_cluster_autoscaler ? 1 : 0
-  source            = "./cluster-autoscaler"
-  helm_config       = var.cluster_autoscaler_helm_config
-  manage_via_gitops = var.argocd_manage_add_ons
-  addon_context     = local.addon_context
 }
 
 module "crossplane" {

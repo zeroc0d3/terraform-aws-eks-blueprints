@@ -73,10 +73,11 @@ module "eks_blueprints" {
 module "eks_blueprints_kubernetes_addons" {
   source = "../../../modules/kubernetes-addons"
 
-  eks_cluster_id       = module.eks_blueprints.eks_cluster_id
-  eks_cluster_endpoint = module.eks_blueprints.eks_cluster_endpoint
-  eks_oidc_provider    = module.eks_blueprints.oidc_provider
-  eks_cluster_version  = module.eks_blueprints.eks_cluster_version
+  eks_cluster_id        = module.eks_blueprints.eks_cluster_id
+  eks_cluster_endpoint  = module.eks_blueprints.eks_cluster_endpoint
+  eks_oidc_provider     = module.eks_blueprints.oidc_provider
+  eks_oidc_provider_arn = module.eks_blueprints.eks_oidc_provider_arn
+  eks_cluster_version   = module.eks_blueprints.eks_cluster_version
 
   enable_argocd         = true
   argocd_manage_add_ons = true # Indicates that ArgoCD is responsible for managing/deploying add-ons
@@ -94,20 +95,17 @@ module "eks_blueprints_kubernetes_addons" {
   }
 
   # Add-ons
-  enable_aws_for_fluentbit  = true
-  enable_cert_manager       = true
-  enable_cluster_autoscaler = true
-  enable_karpenter          = true
-  enable_keda               = true
-  enable_metrics_server     = true
-  enable_prometheus         = true
-  enable_traefik            = true
-  enable_vpa                = true
-  enable_yunikorn           = true
-  enable_argo_rollouts      = true
+  enable_aws_for_fluentbit       = true
+  enable_cert_manager            = true
+  enable_cluster_autoscaler      = true
+  create_cluster_autoscaler_irsa = true
+  enable_metrics_server          = true
+  enable_prometheus              = true
+  enable_traefik                 = true
+  enable_vpa                     = true
+  enable_argo_rollouts           = true
 
   tags = local.tags
-
 }
 
 #---------------------------------------------------------------

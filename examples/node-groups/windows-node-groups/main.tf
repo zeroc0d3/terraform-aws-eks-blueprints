@@ -83,10 +83,11 @@ module "eks_blueprints" {
 module "eks_blueprints_kubernetes_addons" {
   source = "../../../modules/kubernetes-addons"
 
-  eks_cluster_id       = module.eks_blueprints.eks_cluster_id
-  eks_cluster_endpoint = module.eks_blueprints.eks_cluster_endpoint
-  eks_oidc_provider    = module.eks_blueprints.oidc_provider
-  eks_cluster_version  = module.eks_blueprints.eks_cluster_version
+  eks_cluster_id        = module.eks_blueprints.eks_cluster_id
+  eks_cluster_endpoint  = module.eks_blueprints.eks_cluster_endpoint
+  eks_oidc_provider     = module.eks_blueprints.oidc_provider
+  eks_oidc_provider_arn = module.eks_blueprints.eks_oidc_provider_arn
+  eks_cluster_version   = module.eks_blueprints.eks_cluster_version
 
   # EKS Managed Add-ons
   enable_amazon_eks_coredns    = true
@@ -113,8 +114,9 @@ module "eks_blueprints_kubernetes_addons" {
     ]
   }
 
-  enable_cluster_autoscaler = true
-  cluster_autoscaler_helm_config = {
+  enable_cluster_autoscaler      = true
+  create_cluster_autoscaler_irsa = true
+  cluster_autoscaler_helm_release = {
     set = [
       {
         name  = "nodeSelector.kubernetes\\.io/os"
@@ -124,7 +126,6 @@ module "eks_blueprints_kubernetes_addons" {
   }
 
   tags = local.tags
-
 }
 
 #---------------------------------------------------------------

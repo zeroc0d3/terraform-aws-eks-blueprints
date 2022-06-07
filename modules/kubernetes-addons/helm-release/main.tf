@@ -48,6 +48,7 @@ resource "helm_release" "this" {
     }
   }
 
+  # Will always diff https://github.com/hashicorp/terraform-provider-helm/issues/627
   dynamic "set" {
     for_each = try(var.release.set, [])
 
@@ -59,7 +60,7 @@ resource "helm_release" "this" {
   }
 
   dynamic "set_sensitive" {
-    for_each = try(var.release.set_sensitive, {})
+    for_each = try(var.release.set_sensitive, [])
 
     content {
       name  = set_sensitive.value.name
