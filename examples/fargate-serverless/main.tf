@@ -35,6 +35,8 @@ locals {
   name   = basename(path.cwd)
   region = "us-west-2"
 
+  sample_app_namespace = "game-2048"
+
   vpc_cidr = "10.0.0.0/16"
   azs      = slice(data.aws_availability_zones.available.names, 0, 3)
 
@@ -42,47 +44,12 @@ locals {
     Blueprint  = local.name
     GithubRepo = "github.com/aws-ia/terraform-aws-eks-blueprints"
   }
-
-  default_profiles = {
-    # Providing compute for default namespace
-    default = {
-      fargate_profile_name = "default"
-      fargate_profile_namespaces = [
-        {
-          namespace = "default"
-      }]
-      subnet_ids = module.vpc.private_subnets
-    }
-    # Providing compute for kube-system namespace where core addons reside
-    kube_system = {
-      fargate_profile_name = "kube-system"
-      fargate_profile_namespaces = [
-        {
-          namespace = "kube-system"
-      }]
-      subnet_ids = module.vpc.private_subnets
-    }
-  }
-
-  # Provide compute for sample_app
-  smaple_app_namespace = "game-2048"
-  sample_app_profile = {
-    alb_sample_app = {
-      fargate_profile_name = "alb-sample-app"
-      fargate_profile_namespaces = [
-        {
-          namespace = local.smaple_app_namespace
-      }]
-      subnet_ids = module.vpc.private_subnets
-    }
-  }
-
-  fargate_profiles = var.deploy_sample_app ? merge(local.default_profiles, local.sample_app_profile) : local.default_profiles
 }
 
 #---------------------------------------------------------------
 # EKS Blueprints
 #---------------------------------------------------------------
+
 module "eks_blueprints" {
   source = "../.."
 
@@ -96,7 +63,35 @@ module "eks_blueprints" {
   # https://github.com/aws-ia/terraform-aws-eks-blueprints/issues/494
   cluster_kms_key_additional_admin_arns = [data.aws_caller_identity.current.arn]
 
-  fargate_profiles = local.fargate_profiles
+  fargate_profiles = {
+    # Providing compute for default namespace
+    default = {
+      name = "default"
+      selectors = [
+        {
+          namespace = "default"
+        }
+      ]
+    }
+    # Providing compute for kube-system namespace where core addons reside
+    kube_system = {
+      name = "kube-system"
+      selectors = [
+        {
+          namespace = "kube-system"
+        }
+      ]
+    }
+
+    alb_sample_app = {
+      name = "alb-sample-app"
+      selectors = [
+        {
+          namespace = local.sample_app_namespace
+        }
+      ]
+    }
+  }
 
   tags = local.tags
 }
@@ -231,6 +226,7 @@ resource "null_resource" "modify_kube_dns" {
 #---------------------------------------------------------------
 # Supporting Resources
 #---------------------------------------------------------------
+
 module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
   version = "~> 3.0"
@@ -268,17 +264,18 @@ module "vpc" {
 }
 
 #---------------------------------------------------------------
-# Optional - Sample App
+# Sample App
 #---------------------------------------------------------------
+
 data "kubectl_path_documents" "sample_app" {
   pattern = "${path.module}/sample-app/*.yaml"
 }
 
 resource "kubernetes_namespace_v1" "sample_app" {
-  count = var.deploy_sample_app ? 1 : 0
   metadata {
-    name = local.smaple_app_namespace
+    name = local.sample_app_namespace
   }
+
   depends_on = [
     module.eks_blueprints,
     module.eks_blueprints_kubernetes_addons
@@ -286,9 +283,11 @@ resource "kubernetes_namespace_v1" "sample_app" {
 }
 
 resource "kubectl_manifest" "sample_app" {
-  count     = var.deploy_sample_app ? length(data.kubectl_path_documents.sample_app.documents) : 0
+  count = length(data.kubectl_path_documents.sample_app.documents)
+
   yaml_body = element(data.kubectl_path_documents.sample_app.documents, count.index)
+
   depends_on = [
-    kubernetes_namespace_v1.sample_app[0]
+    kubernetes_namespace_v1.sample_app
   ]
 }
