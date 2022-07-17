@@ -31,13 +31,13 @@ git clone https://github.com/aws-ia/terraform-aws-eks-blueprints.git
 
 CD into the example directory:
 
-```
+```sh
 cd examples/eks-cluster-with-new-vpc/
 ```
 
 Initialize the working directory with the following:
 
-```
+```sh
 terraform init
 ```
 
@@ -45,7 +45,7 @@ terraform init
 
 Verify the resources that will be created by this execution:
 
-```
+```sh
 terraform plan
 ```
 
@@ -53,35 +53,35 @@ terraform plan
 
 We will leverage Terraform's [target](https://learn.hashicorp.com/tutorials/terraform/resource-targeting?in=terraform/cli) functionality to deploy a VPC, an EKS Cluster, and Kubernetes add-ons in separate steps.
 
-**Deploy the VPC**. This step will take roughly 3 minutes to complete.
+Deploy the VPC. This step will take roughly 3 minutes to complete.
 
-```
-terraform apply -target="module.vpc"
-```
-
-**Deploy the EKS cluster**. This step will take roughly 14 minutes to complete.
-
-```
-terraform apply -target="module.eks_blueprints"
+```sh
+terraform apply -target=module.vpc
 ```
 
-**Deploy the add-ons**. This step will take rough 5 minutes to complete.
+Deploy the EKS cluster. This step will take roughly 14 minutes to complete.
 
+```sh
+terraform apply -target=module.eks_blueprints
 ```
-terraform apply -target="module.eks_blueprints_kubernetes_addons"
+
+Deploy the add-ons and ensure all resources are provisioned. This step will take rough 5 minutes to complete.
+
+```sh
+terraform apply
 ```
 
 ## Configure kubectl
 
 Terraform output will display a command in your console that you can use to bootstrap your local `kubeconfig`.
 
-```
+```sh
 configure_kubectl = "aws eks --region <region> update-kubeconfig --name <cluster-name>"
 ```
 
 Run the command in your terminal.
 
-```
+```sh
 aws eks --region <region> update-kubeconfig --name <cluster-name>
 ```
 
@@ -89,13 +89,13 @@ aws eks --region <region> update-kubeconfig --name <cluster-name>
 
 ### List worker nodes
 
-```
+```sh
 kubectl get nodes
 ```
 
 You should see output similar to the following:
 
-```
+```sh
 NAME                                        STATUS   ROLES    AGE     VERSION
 ip-10-0-10-161.us-west-2.compute.internal   Ready    <none>   4h18m   v1.21.5-eks-9017834
 ip-10-0-11-171.us-west-2.compute.internal   Ready    <none>   4h18m   v1.21.5-eks-9017834
@@ -104,13 +104,13 @@ ip-10-0-12-48.us-west-2.compute.internal    Ready    <none>   4h18m   v1.21.5-ek
 
 ### List pods
 
-```
+```sh
 kubectl get pods -n kube-system
 ```
 
 You should see output similar to the following:
 
-```
+```sh
 NAME                                                        READY   STATUS    RESTARTS   AGE
 aws-load-balancer-controller-954746b57-k9lhc                1/1     Running   1          15m
 aws-load-balancer-controller-954746b57-q5gh4                1/1     Running   1          15m
@@ -130,20 +130,20 @@ metrics-server-694d47d564-hzd8h                             1/1     Running   1 
 
 To clean up your environment, destroy the Terraform modules in reverse order.
 
-Destroy the add-ons.
+Destroy the add-ons. It is important to ensure addons are destroyed first; some addons will create AWS resources and if those resources are not cleaned up first, Terraform will fail to clean up resources in the following steps due to resource conflicts.
 
-```
-terraform destroy -target="module.eks_blueprints_kubernetes_addons"
+```sh
+terraform destroy -target=module.eks_blueprints_kubernetes_addons --auto-approve
 ```
 
 Destroy the EKS cluster.
 
-```
-terraform destroy -target="module.eks_blueprints"
+```sh
+terraform destroy -target=module.eks_blueprints --auto-approve
 ```
 
-Destroy the VPC.
+Destroy the remaining resources.
 
-```
-terraform destroy -target="module.vpc"
+```sh
+terraform destroy --auto-approve
 ```

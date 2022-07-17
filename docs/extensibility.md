@@ -134,7 +134,7 @@ data "aws_iam_policy_document" "cni_metrics" {
 
 ### Secrets Handling
 
-We expect that certain add-ons will need to provide access to sensitive values to their helm chart configuration such as password, license keys, API keys, etc. We recommend that you ask customers to store such secrets in an external secret store such as AWS Secrets Manager or AWS Systems Manager Parameter Store and use the [AWS Secrets and Configuration Provider (ASCP)](https://docs.aws.amazon.com/secretsmanager/latest/userguide/integrating_csi_driver.html) to mount the secrets as files or environment variables in the pods of your add-on. We are actively working on providing a native add-on for ASCP as of this writing which you will be able to levarage for your add-on.
+We expect that certain add-ons will need to provide access to sensitive values to their helm chart configuration such as password, license keys, API keys, etc. We recommend that you ask customers to store such secrets in an external secret store such as AWS Secrets Manager or AWS Systems Manager Parameter Store and use the [AWS Secrets and Configuration Provider (ASCP)](https://docs.aws.amazon.com/secretsmanager/latest/userguide/integrating_csi_driver.html) to mount the secrets as files or environment variables in the pods of your add-on. We are actively working on providing a native add-on for ASCP as of this writing which you will be able to leverage for your add-on.
 
 ## Example Public Add-On
 
@@ -146,7 +146,7 @@ We recommend the use of pattern `terraform-eksblueprints-<addon_name>` as the na
 
 ### Add-On Code
 
-We recommend your add-on code follow Terraform standards for best practices for organizing your code, such as..
+We recommend your add-on code follow the [Terraform standard module structure](https://www.terraform.io/language/modules/develop/structure). For example:
 
 ```sh
 .
@@ -154,48 +154,24 @@ We recommend your add-on code follow Terraform standards for best practices for 
 ├── CONTRIBUTING.md
 ├── LICENSE
 ├── README.md
-├── blueprints
-│   ├── README.md
-│   ├── addons
-│   │   ├── README.md
-│   │   ├── addons.tfbackend
-│   │   ├── backend.tf
-│   │   ├── data.tf
-│   │   ├── main.tf
-│   │   ├── providers.tf
-│   │   └── variables.tf
-│   ├── eks
-│   │   ├── README.md
-│   │   ├── backend.tf
-│   │   ├── data.tf
-│   │   ├── eks.tfbackend
-│   │   ├── main.tf
-│   │   ├── outputs.tf
-│   │   ├── providers.tf
-│   │   └── variables.tf
-│   ├── vars
-│   │   └── config.tfvars
-│   └── vpc
+├── examples
+│   └── complete
 │       ├── README.md
-│       ├── backend.tf
-│       ├── data.tf
-│       ├── locals.tf
 │       ├── main.tf
 │       ├── outputs.tf
-│       ├── providers.tf
-│       ├── variables.tf
-│       └── vpc.tfbackend
-├── locals.tf
+│       ├── versions.tf
+│       └── variables.tf
 ├── main.tf
 ├── outputs.tf
 ├── values.yaml
+├── versions.tf
 └── variables.tf
 ```
 
 In the above code tree,
 
 - The root directory contains your add-on code.
-- The blueprints code contains the code that demonstrates how customers can use your add-on with the EKS Blueprints framework. Here, we highly recommend that you show the true value add of your add-on through the pattern. Customers will benefit the most where the example shows how they can integrate their workload with your add-on.
+- The example directory contains the code that demonstrates how users can integrate and provision your add-on with the EKS Blueprints framework. Users will benefit the most where the example shows how they can integrate their workload with your add-on.
 
 If your add-on can be deployed via helm chart, we recommend the use of the [helm-addon](https://github.com/aws-ia/terraform-aws-eks-blueprints/blob/main/modules/kubernetes-addons/helm-addon) as shown below.
 
@@ -205,10 +181,10 @@ If your add-on can be deployed via helm chart, we recommend the use of the [helm
 
 ```hcl
 module "helm_addon" {
-  source               = "github.com/aws-ia/terraform-aws-eks-blueprints//modules/kubernetes-addons/helm-addon?ref=v3.5.0"
+  source = "github.com/aws-ia/terraform-aws-eks-blueprints//modules/kubernetes-addons/helm-addon?ref=v5.0.0"
+
   manage_via_gitops    = var.manage_via_gitops
 
-  ### The following values are defined in locals.tf
   set_values           = local.set_values
   set_sensitive_values = local.set_sensitive_values
   helm_config          = local.helm_config
@@ -224,8 +200,10 @@ Once you have tested your add-on locally against your fork of the core repo, ple
 
 ```hcl
 module "kube_state_metrics" {
-  count                     = var.enable_kube_state_metrics ? 1 : 0
-  source                    = "askulkarni2/kube-state-metrics-addon/eksblueprints"
+  source = "askulkarni2/kube-state-metrics-addon/eksblueprints"
+
+  count = var.enable_kube_state_metrics ? 1 : 0
+
   version                   = "0.0.2"
   helm_config               = var.kube_state_metrics_helm_config
   addon_context             = local.addon_context
@@ -238,15 +216,15 @@ module "kube_state_metrics" {
 ```hcl
 #-----------Kube State Metrics ADDON-------------
 variable "enable_kube_state_metrics" {
+  description = "Enable Kube State Metrics add-on"
   type        = bool
   default     = false
-  description = "Enable Kube State Metrics add-on"
 }
 
 variable "kube_state_metrics_helm_config" {
+  description = "Kube State Metrics Helm Chart config"
   type        = any
   default     = {}
-  description = "Kube State Metrics Helm Chart config"
 }
 ```
 
